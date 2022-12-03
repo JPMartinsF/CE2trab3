@@ -61,6 +61,8 @@ def lerNetList(netlist):
                 elif line[0] == "H":
                     numVariaveisExtras+=1
                     info += [numVariaveisExtras]
+                    numVariaveisExtras+=1
+                    info += [numVariaveisExtras]
                     dictInfo = dict(zip(chavesFonteTensaoContCorrente, info))
                     listaFontesTensaoContCorrente.append(dictInfo)
     return listaResistores, listaFontesCorrenteIndep, listaFontesTensaoIndep, listaFontesCorrenteContTensao, listaFontesCorrenteContCorrente, listaFontesTensaoContTensao, listaFontesTensaoContCorrente, numVariaveisExtras
@@ -68,48 +70,62 @@ def lerNetList(netlist):
 def montaMatrizes(listaResistores, listaFontesCorrenteIndep, listaFontesTensaoIndep, listaFontesCorrenteContTensao, listaFontesCorrenteContCorrente, listaFontesTensaoContTensao, listaFontesTensaoContCorrente, numVariaveisExtras):
     #MANTER PARA TER CONTROLE DO NÚMERO DAS VARIÁVEIS EXTRAS
     numNos = tamanhoMatrizGn(listaResistores, listaFontesCorrenteIndep, listaFontesCorrenteContTensao) 
+    #print(numNos, numVariaveisExtras)
     matrizGn = np.zeros((numNos + numVariaveisExtras + 1, numNos + numVariaveisExtras + 1))
     listaI = np.zeros(numNos + numVariaveisExtras + 1)
+    #FEITO
     for resistor in listaResistores:
         #print(resistor)
-        matrizGn[int(resistor["No1"])][int(resistor["No1"])] += 1/int(resistor["Valor"])
-        matrizGn[int(resistor["No1"])][int(resistor["No2"])] -= 1/int(resistor["Valor"])
-        matrizGn[int(resistor["No2"])][int(resistor["No1"])] -= 1/int(resistor["Valor"])
-        matrizGn[int(resistor["No2"])][int(resistor["No2"])] += 1/int(resistor["Valor"])
-
-    #FAZENDO AGORA
+        matrizGn[int(resistor["No1"])][int(resistor["No1"])] += 1/float(resistor["Valor"])
+        matrizGn[int(resistor["No1"])][int(resistor["No2"])] -= 1/float(resistor["Valor"])
+        matrizGn[int(resistor["No2"])][int(resistor["No1"])] -= 1/float(resistor["Valor"])
+        matrizGn[int(resistor["No2"])][int(resistor["No2"])] += 1/float(resistor["Valor"])
+    #FEITO
     for fonteCorrContTens in listaFontesCorrenteContTensao:
         #print(fonteCorrContTens)
-        matrizGn[int(fonteCorrContTens["No1"])][int(fonteCorrContTens["Controle1"])] += int(fonteCorrContTens["Valor"])
-        matrizGn[int(fonteCorrContTens["No1"])][int(fonteCorrContTens["Controle2"])] -= int(fonteCorrContTens["Valor"])
-        matrizGn[int(fonteCorrContTens["No2"])][int(fonteCorrContTens["Controle1"])] -= int(fonteCorrContTens["Valor"])
-        matrizGn[int(fonteCorrContTens["No2"])][int(fonteCorrContTens["Controle2"])] += int(fonteCorrContTens["Valor"])
+        matrizGn[int(fonteCorrContTens["No1"])][int(fonteCorrContTens["Controle1"])] += float(fonteCorrContTens["Valor"])
+        matrizGn[int(fonteCorrContTens["No1"])][int(fonteCorrContTens["Controle2"])] -= float(fonteCorrContTens["Valor"])
+        matrizGn[int(fonteCorrContTens["No2"])][int(fonteCorrContTens["Controle1"])] -= float(fonteCorrContTens["Valor"])
+        matrizGn[int(fonteCorrContTens["No2"])][int(fonteCorrContTens["Controle2"])] += float(fonteCorrContTens["Valor"])
+    #FEITO
     for fonteCorrContCorr in listaFontesCorrenteContCorrente:
         #print(fonteCorrContCorr)
-        matrizGn[int(fonteCorrContCorr["No1"])][int(fonteCorrContCorr["Controle1"])] += int(fonteCorrContCorr["Valor"])
-        matrizGn[int(fonteCorrContCorr["No1"])][int(fonteCorrContCorr["Controle2"])] -= int(fonteCorrContCorr["Valor"])
-        matrizGn[int(fonteCorrContCorr["No2"])][int(fonteCorrContCorr["Controle1"])] -= int(fonteCorrContCorr["Valor"])
-        matrizGn[int(fonteCorrContCorr["No2"])][int(fonteCorrContCorr["Controle2"])] += int(fonteCorrContCorr["Valor"])
+        matrizGn[int(fonteCorrContCorr["No1"])][numNos + fonteCorrContCorr["Variavel"]] += float(fonteCorrContCorr["Valor"])
+        matrizGn[int(fonteCorrContCorr["No2"])][numNos + fonteCorrContCorr["Variavel"]] -= float(fonteCorrContCorr["Valor"])
+        matrizGn[int(fonteCorrContCorr["Controle1"])][numNos + fonteCorrContCorr["Variavel"]] += 1
+        matrizGn[int(fonteCorrContCorr["Controle2"])][numNos + fonteCorrContCorr["Variavel"]] -= 1
+        matrizGn[numNos + fonteCorrContCorr["Variavel"]][int(fonteCorrContCorr["Controle1"])] -= 1
+        matrizGn[numNos + fonteCorrContCorr["Variavel"]][int(fonteCorrContCorr["Controle2"])] += 1
+    #FEITO
     for fonteTensContTens in listaFontesTensaoContTensao:
-        print(fonteTensContTens)
-        matrizGn[int(fonteTensContTens["No1"])][int(fonteTensContTens["Controle1"])] += int(fonteTensContTens["Valor"])
-        matrizGn[int(fonteTensContTens["No1"])][int(fonteTensContTens["Controle2"])] -= int(fonteTensContTens["Valor"])
-        matrizGn[int(fonteTensContTens["No2"])][int(fonteTensContTens["Controle1"])] -= int(fonteTensContTens["Valor"])
-        matrizGn[int(fonteTensContTens["No2"])][int(fonteTensContTens["Controle2"])] += int(fonteTensContTens["Valor"])
+        #print(fonteTensContTens)
+        matrizGn[int(fonteTensContTens["No1"])][numNos + fonteTensContTens["Variavel"]] += 1
+        matrizGn[int(fonteTensContTens["No2"])][numNos + fonteTensContTens["Variavel"]] -= 1
+        matrizGn[numNos + fonteTensContTens["Variavel"]][int(fonteTensContTens["No1"])] -= 1
+        matrizGn[numNos + fonteTensContTens["Variavel"]][int(fonteTensContTens["No2"])] += 1
+        matrizGn[numNos + fonteTensContTens["Variavel"]][int(fonteTensContTens["Controle1"])] += float(fonteTensContTens["Valor"])
+        matrizGn[numNos + fonteTensContTens["Variavel"]][int(fonteTensContTens["Controle2"])] -= float(fonteTensContTens["Valor"])
+    #FEITO
     for fonteTensContCorr in listaFontesTensaoContCorrente:
         #print(fonteTensContCorr)
-        matrizGn[int(fonteTensContCorr["No1"])][int(fonteTensContCorr["Controle1"])] += int(fonteTensContCorr["Valor"])
-        matrizGn[int(fonteTensContCorr["No1"])][int(fonteTensContCorr["Controle2"])] -= int(fonteTensContCorr["Valor"])
-        matrizGn[int(fonteTensContCorr["No2"])][int(fonteTensContCorr["Controle1"])] -= int(fonteTensContCorr["Valor"])
-        matrizGn[int(fonteTensContCorr["No2"])][int(fonteTensContCorr["Controle2"])] += int(fonteTensContCorr["Valor"])
+        matrizGn[int(fonteTensContCorr["No1"])][numNos + fonteTensContCorr["Variavel2"]] += 1
+        matrizGn[int(fonteTensContCorr["No2"])][numNos + fonteTensContCorr["Variavel2"]] -= 1
+        matrizGn[int(fonteTensContCorr["Controle1"])][numNos + fonteTensContCorr["Variavel1"]] += 1
+        matrizGn[int(fonteTensContCorr["Controle2"])][numNos + fonteTensContCorr["Variavel1"]] -= 1
+        matrizGn[numNos + fonteTensContCorr["Variavel1"]][int(fonteTensContCorr["Controle1"])] -= 1
+        matrizGn[numNos + fonteTensContCorr["Variavel1"]][int(fonteTensContCorr["Controle2"])] += 1
+        matrizGn[numNos + fonteTensContCorr["Variavel2"]][int(fonteTensContCorr["No1"])] -= 1
+        matrizGn[numNos + fonteTensContCorr["Variavel2"]][int(fonteTensContCorr["No2"])] += 1
+        matrizGn[numNos + fonteTensContCorr["Variavel2"]][numNos + fonteTensContCorr["Variavel1"]] += float(fonteTensContCorr["Valor"])
+    #FEITO
     for fonteCorrIndep in listaFontesCorrenteIndep:
         #print(fonteCorrIndep)
-        listaI[int(fonteCorrIndep["No1"])] -= int(fonteCorrIndep["Valor"])
-        listaI[int(fonteCorrIndep["No2"])] += int(fonteCorrIndep["Valor"])
+        listaI[int(fonteCorrIndep["No1"])] -= float(fonteCorrIndep["Valor"])
+        listaI[int(fonteCorrIndep["No2"])] += float(fonteCorrIndep["Valor"])
     #FONTE DE TENSÃO INDEP OK!    
     for fonteTensIndep in listaFontesTensaoIndep:
         #print(fonteTensIndep)
-        listaI[numNos + fonteTensIndep["Variavel"]] -= int(fonteTensIndep["Valor"])
+        listaI[numNos + fonteTensIndep["Variavel"]] -= float(fonteTensIndep["Valor"])
         matrizGn[int(fonteTensIndep["No1"])][numNos + fonteTensIndep["Variavel"]] += 1
         matrizGn[int(fonteTensIndep["No2"])][numNos + fonteTensIndep["Variavel"]] -= 1
         matrizGn[numNos + fonteTensIndep["Variavel"]][int(fonteTensIndep["No1"])] -= 1
@@ -125,7 +141,12 @@ def main(arqNetList):
     matrizE = np.linalg.solve(matrizGn, listaI)
     return matrizE
 
-print(f"Netlist 0: {main('netlist0.txt')}")
-#print(f"Netlist 1: {main('netlist1.txt')}")
-#print(f"Netlist 2: {main('netlist2.txt')}")
-#print(f"Netlist 3: {main('netlist3.txt')}")
+#print(f"Netlist 0: {main('netlist0.txt')}")
+#Netlist1: OK
+print(f"Netlist 1: {main('netlist1.txt')}")
+#Netlist2: OK 
+print(f"Netlist 2: {main('netlist2.txt')}")
+#Netlist3: OK 
+print(f"Netlist 3: {main('netlist3.txt')}")
+#Netlist4: OK
+print(f"Netlist 4: {main('netlist4.txt')}")
